@@ -20,7 +20,7 @@ func coreListener(port int, instanceID string, ready io.Writer) (net.Listener, e
 	if port < 0 || port > 65535 || strings.ContainsAny(instanceID, " \t\r\n") {
 		return nil, errors.New("invalid local runtime configuration")
 	}
-	listener, err := net.Listen("tcp4", "127.0.0.1:"+strconv.Itoa(port))
+	listener, err := net.Listen("tcp4", coreListenHost+":"+strconv.Itoa(port))
 	if err != nil {
 		return nil, err
 	}

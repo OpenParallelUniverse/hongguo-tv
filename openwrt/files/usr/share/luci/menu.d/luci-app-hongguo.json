@@ -1,0 +1,8 @@
+{
+  "admin/services/hongguo": {
+    "title": "红果短剧",
+    "order": 65,
+    "action": { "type": "view", "path": "hongguo/settings" },
+    "depends": { "acl": ["luci-app-hongguo"], "uci": { "hongguo": true } }
+  }
+}

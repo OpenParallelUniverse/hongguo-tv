@@ -50,8 +50,6 @@ const (
 	miniReelFallbackMaxHops    = 3
 	miniReelTTL                = 2 * time.Hour
 	miniReelRangeTTL           = 15 * time.Minute
-	miniReelMaxBytes           = 512 << 20
-	miniReelMaxCache           = 512 << 20
 	miniReelVideoModelAttempts = 3
 	miniReelIdentityRefreshGap = 10 * time.Minute
 	miniReelIdentityCandidates = 4
@@ -101,6 +99,11 @@ type miniReelMediaJob struct {
 	DecryptMS   int64
 	RangeInitMS int64
 }
+
+// Tunable by the standalone router runtime; unchanged defaults for tests/hosts.
+var miniReelMaxBytes int64 = 512 << 20
+var miniReelMaxCache int64 = 512 << 20
+var mediaPrepareSlots chan struct{}
 
 var miniReelState = struct {
 	sync.Mutex
@@ -444,7 +447,17 @@ acquire:
 		job = &miniReelMediaJob{Ready: make(chan struct{}), Accessed: time.Now(), Context: jobCtx, Cancel: cancel, CodecMode: codecMode, ContentType: contentType}
 		miniReelState.jobs[token] = job
 		go func() {
-			prepare(jobCtx, job, token, seriesID, vid, quality, fallback)
+			if mediaPrepareSlots != nil {
+				select {
+				case mediaPrepareSlots <- struct{}{}:
+					prepare(jobCtx, job, token, seriesID, vid, quality, fallback)
+					<-mediaPrepareSlots
+				case <-jobCtx.Done():
+					job.Err = jobCtx.Err()
+				}
+			} else {
+				prepare(jobCtx, job, token, seriesID, vid, quality, fallback)
+			}
 			miniReelState.Lock()
 			job.Accessed = time.Now()
 			cancel()

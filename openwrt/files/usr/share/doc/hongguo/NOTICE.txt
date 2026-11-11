@@ -1,0 +1,8 @@
+Hongguo LAN / OpenWrt integration 0.1.0-r1
+Upstream: https://github.com/aston314/hongguo-tv
+Upstream commit: c7d74e804c642fdc85542fc1a58150124f59c030
+The inspected upstream checkout contains no top-level LICENSE grant.
+No new redistribution rights to upstream code, branding, or content are asserted.
+Third-party Go dependency: github.com/skip2/go-qrcode, MIT license (included).
+Go runtime: https://go.dev/LICENSE (BSD-3-Clause).
+This is an unofficial personal-use integration, not an official Hongguo client.

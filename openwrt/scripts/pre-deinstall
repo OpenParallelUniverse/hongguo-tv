@@ -1,0 +1,4 @@
+#!/bin/sh
+/etc/init.d/hongguo stop
+/etc/init.d/hongguo disable
+exit 0

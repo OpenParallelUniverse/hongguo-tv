@@ -1,0 +1,30 @@
+{
+  "luci-app-hongguo": {
+    "description": "管理红果短剧本地 Web 服务",
+    "read": {
+      "uci": [
+        "hongguo"
+      ],
+      "ubus": {
+        "service": [
+          "list"
+        ]
+      }
+    },
+    "write": {
+      "uci": [
+        "hongguo"
+      ],
+      "file": {
+        "/etc/init.d/hongguo": [
+          "exec"
+        ]
+      },
+      "ubus": {
+        "file": [
+          "exec"
+        ]
+      }
+    }
+  }
+}

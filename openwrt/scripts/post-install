@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+. /lib/functions.sh
+mkdir -p /var/lock /var/run
+if ! user_exists hongguo; then
+	gid="$(group_add_next hongguo)"
+	user_add hongguo '' "$gid" 'Hongguo LAN service' /etc/hongguo /bin/false
+fi
+mkdir -p /etc/hongguo
+chown hongguo:hongguo /etc/hongguo
+chmod 700 /etc/hongguo
+chmod 600 /etc/config/hongguo
+/etc/init.d/hongguo enable
+rm -f /tmp/luci-indexcache
+rm -rf /tmp/luci-modulecache
+if [ -S /var/run/ubus/ubus.sock ]; then
+	/etc/init.d/rpcd reload
+	/etc/init.d/hongguo restart
+fi
+exit 0

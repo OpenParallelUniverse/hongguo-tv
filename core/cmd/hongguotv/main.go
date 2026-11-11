@@ -36,6 +36,7 @@ type server struct {
 	numberInputs         *numberInputManager
 	searchHistoryStore   *searchHistoryStore
 	searchDiscoveryCache searchDiscoveryCache
+	lanAccess            *lanAccess
 }
 
 type statusResponse struct {
@@ -49,11 +50,29 @@ type statusResponse struct {
 }
 
 func main() {
-	port := flag.Int("port", 8797, "local HTTP port")
+	port := flag.Int("port", 8797, "HTTP port")
+	listen := flag.String("listen", "127.0.0.1", "IPv4 listen address; LAN mode requires --lan")
+	lan := flag.Bool("lan", false, "serve authenticated clients on private IPv4 networks")
+	passwordFile := flag.String("password-file", "", "file containing LAN HTTP Basic password (username: hongguo)")
+	cacheMB := flag.Int64("cache-mb", 512, "completed media cache cleanup threshold in MiB")
+	maxMediaMB := flag.Int64("max-media-mb", 512, "maximum whole-file media size in MiB")
+	prepareConcurrency := flag.Int("prepare-concurrency", 1, "maximum concurrent media preparations in LAN mode")
 	instanceID := flag.String("instance-id", "", "Android child process identity")
 	parentPID := flag.Int("parent-pid", 0, "exit when the Android host process ends")
 	dataDir := flag.String("data-dir", defaultLibraryDir(), "persistent local library directory")
 	flag.Parse()
+	access, err := configureLAN(*listen, *lan, *passwordFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if *cacheMB < 16 || *cacheMB > 4096 || *maxMediaMB < 8 || *maxMediaMB > *cacheMB || *prepareConcurrency < 1 || *prepareConcurrency > 4 {
+		log.Fatal("cache-mb must be 16..4096, max-media-mb must be 8..cache-mb, prepare-concurrency must be 1..4")
+	}
+	miniReelMaxCache = *cacheMB << 20
+	miniReelMaxBytes = *maxMediaMB << 20
+	if access != nil {
+		mediaPrepareSlots = make(chan struct{}, *prepareConcurrency)
+	}
 
 	root, err := fs.Sub(uiFiles, "ui")
 	if err != nil {
@@ -66,7 +85,7 @@ func main() {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	s := &server{instanceID: *instanceID, startedAt: time.Now().UTC(), hongguo: newHongguoClient(), radar: newRadarService(*dataDir, nil), libraryStore: library}
+	s := &server{lanAccess: access, instanceID: *instanceID, startedAt: time.Now().UTC(), hongguo: newHongguoClient(), radar: newRadarService(*dataDir, nil), libraryStore: library}
 	s.watchStatisticsStore = &watchStatisticsStore{dir: *dataDir}
 	if err := initPlaybackCustomDevice(filepath.Join(*dataDir, "playback-custom-device.json")); err != nil {
 		log.Printf("prepare custom playback device: %v", err)
@@ -128,7 +147,7 @@ func main() {
 	mux.HandleFunc("/minireel-proxy/media/", handleMiniReelMedia)
 	mux.Handle("/", serveUI(root))
 
-	if err := serveLocalCore(ctx, *port, *instanceID, *parentPID, s.withCORS(mux)); err != nil {
+	if err := serveLocalCore(ctx, *port, *instanceID, *parentPID, s.withLANAccess(s.withCORS(mux))); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -146,7 +165,7 @@ func serveUI(root fs.FS) http.Handler {
 func (s *server) withCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/api/v1/account") || r.URL.Path == "/api/v1/number-input" || strings.HasPrefix(r.URL.Path, "/api/v1/lists/") || r.URL.Path == "/api/v1/search" || r.URL.Path == "/api/v1/Search" || r.URL.Path == "/api/v1/follow" || r.URL.Path == "/api/v1/notifications" || strings.HasPrefix(r.URL.Path, "/api/v1/player/") || r.URL.Path == "/api/v1/series/seasons" || r.URL.Path == "/api/v1/replies" || r.URL.Path == "/api/v1/reservation" || r.URL.Path == "/api/v1/comments" || r.URL.Path == "/api/v1/danmaku" || r.URL.Path == "/api/v1/library" || r.URL.Path == "/api/v1/watch-statistics" || r.URL.Path == "/api/v1/playback/custom-device" {
-			if !privateLocalRequest(r) {
+			if !s.privateRequestAllowed(r) {
 				writeError(w, http.StatusForbidden, "只允许应用本身访问账号和记录")
 				return
 			}

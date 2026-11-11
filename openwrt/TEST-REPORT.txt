@@ -1,0 +1,45 @@
+Hongguo OpenWrt integration 0.1.0-r1
+Date: 2026-11-11 (Asia/Shanghai)
+Upstream: c7d74e804c642fdc85542fc1a58150124f59c030
+Compiler: Go 1.25.5, CGO_ENABLED=0, GOOS=linux, GOARCH=amd64, GOAMD64=v1
+Packaging: apk-tools 3.0.9 mkpkg, APKv3
+Compatibility filesystem: official OpenWrt 25.12.5 x86/64 generic rootfs
+Native package manager: apk-tools 3.0.5
+LuCI JS: 26.180.75667~128a781 (matches user's reported build)
+
+PASSED
+- Full core Go test suite, including upstream regression tests and new LAN tests.
+- Mandatory browser/API/media authentication; invalid Host, public source,
+  cross-origin and cross-site rejection; original loopback behavior preserved.
+- Real embedded HTML response and authenticated HTTP byte-range fixture (206).
+- One-slot video preparation limit and canceled queued work.
+- Oversize whole-file download rejection and partial-file removal.
+- Real executable HTTP startup, UI/static assets, account/library APIs,
+  authentication challenge and desktop-mode redirect (no upstream content calls).
+- ELF inspection: stripped, static x86-64 executable, no dynamic libc dependency.
+- OpenWrt-native apk accepted APKv3 file and dependencies, installed files, and
+  native Go executable --help ran inside extracted OpenWrt 25.12.5 filesystem.
+  This clean install check used --no-scripts because the test user namespace
+  cannot assign the daemon's distinct UID/GID; post-install is not claimed tested
+  as a complete native lifecycle transaction.
+- Init script parameter capture using real OpenWrt shell/UCI helpers: cache and
+  password flags, non-root user/group, Go memory environment, and rejection of
+  short passwords / unavailable data-disk paths. Ownership operations and procd
+  calls were stubbed for capture; this does not prove actual daemon supervision.
+- Genuine matching LuCI JS framework in jsdom DOM: all eight fields render,
+  edited password/port reach UCI RPC, weak passwords and inconsistent media/cache
+  limits are rejected, restart button calls the expected init script.
+  ubus JSON-RPC responses are mocked; this is not a live ubus/procd integration.
+- JS and shell syntax, JSON metadata and final archive/package integrity.
+
+NOT YET VERIFIED
+- Installation script UID creation / ownership, procd launch as hongguo, boot,
+  save-and-apply service reload, and full LuCI management on a real router.
+- User's iKuai VM networking/firewall reachability.
+- Current upstream search/content availability, real account login, real video
+  playback, browser codec compatibility, sustained playback CPU/RAM usage.
+
+Environment limits: Unix socket creation / process tracing are restricted in the
+build workspace, preventing full ubus/rpcd/uhttpd and browser-process testing.
+The deliverable is a ready-to-install test package, not a claim of completed
+hardware or live-content acceptance. Start with one viewing device.

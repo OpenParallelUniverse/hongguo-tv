@@ -26,7 +26,7 @@
   shade.type = 'button'; shade.className = 'ow-mobile-shade';
   shade.setAttribute('aria-label', '关闭导航'); shade.tabIndex = -1; shade.hidden = true;
   document.body.insertBefore(header, document.body.firstChild);
-  document.body.appendChild(shade);
+  shell.appendChild(shade);
   var opened = false;
   function menu(value, restoreFocus) {
     opened = !!value && media.matches;

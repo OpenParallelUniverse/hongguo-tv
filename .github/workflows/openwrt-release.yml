@@ -1,0 +1,130 @@
+name: OpenWrt auto release
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      upstream_tag:
+        description: 'Optional published upstream tag, e.g. v0.2.168; empty uses latest stable'
+        type: string
+        default: ''
+  push:
+    branches: [main, openwrt]
+    paths:
+      - '.github/workflows/openwrt-release.yml'
+      - 'openwrt/**'
+      - 'core/**'
+      - 'go.mod'
+      - 'go.sum'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hongguo-openwrt-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.repository == 'OpenParallelUniverse/hongguo-tv'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out OpenWrt integration branch
+        uses: actions/checkout@v4
+        with:
+          ref: openwrt
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check published upstream version and prepare merge
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPSTREAM_TAG: ${{ inputs.upstream_tag }}
+        run: |
+          python3 openwrt/ci/prepare_release.py \
+            --tag "$UPSTREAM_TAG" --output "$RUNNER_TEMP/openwrt-plan.json"
+      - name: Set up Go
+        if: steps.plan.outputs.build == 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - name: Set up Node.js
+        if: steps.plan.outputs.build == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: openwrt/tests/package-lock.json
+      - name: Verify release tooling and Go core
+        if: steps.plan.outputs.build == 'true'
+        env:
+          CGO_ENABLED: '0'
+        run: |
+          python3 -m unittest discover -s openwrt/tests -p 'test_ci.py'
+          go test ./core/cmd/hongguotv -count=1 -timeout=180s
+          node --check openwrt/files/www/luci-static/resources/view/hongguo/settings.js
+          sh -n openwrt/build.sh
+          sh -n openwrt/files/etc/init.d/hongguo
+          for script in openwrt/scripts/*; do sh -n "$script"; done
+      - name: Download checksum-pinned APK tool and LuCI test assets
+        if: steps.plan.outputs.build == 'true'
+        run: python3 openwrt/ci/bootstrap.py "$RUNNER_TEMP/openwrt-tools"
+      - name: Build x86_64 APKv3 with J1900-compatible instructions
+        if: steps.plan.outputs.build == 'true'
+        env:
+          HONGGUO_PKG_VERSION: ${{ steps.plan.outputs.package_version }}
+          HONGGUO_CORE_VERSION: ${{ steps.plan.outputs.core_version }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/openwrt-dist"
+          sudo env GO="$(command -v go)" APK="$RUNNER_TEMP/openwrt-tools/apk" \
+            OUT="$RUNNER_TEMP/openwrt-dist" \
+            GOCACHE="$RUNNER_TEMP/openwrt-go-build" GOMODCACHE="$(go env GOMODCACHE)" \
+            HONGGUO_PKG_VERSION="$HONGGUO_PKG_VERSION" \
+            HONGGUO_CORE_VERSION="$HONGGUO_CORE_VERSION" \
+            sh openwrt/build.sh
+      - name: Check real HTTP service and APK container
+        if: steps.plan.outputs.build == 'true'
+        env:
+          HONGGUO_CORE_VERSION: ${{ steps.plan.outputs.core_version }}
+          PACKAGE_VERSION: ${{ steps.plan.outputs.package_version }}
+        run: |
+          python3 openwrt/tests/smoke.py
+          "$RUNNER_TEMP/openwrt-tools/apk" verify --allow-untrusted \
+            "$RUNNER_TEMP/openwrt-dist/luci-app-hongguo-${PACKAGE_VERSION}_x86_64.apk"
+      - name: Check matching LuCI form rendering and configuration RPC
+        if: steps.plan.outputs.build == 'true'
+        run: |
+          npm ci --prefix openwrt/tests --ignore-scripts --no-audit --no-fund
+          JSDOM_MODULE="$GITHUB_WORKSPACE/openwrt/tests/node_modules/jsdom" \
+            python3 openwrt/tests/luci_dom.py "$RUNNER_TEMP/openwrt-tools/openwrt-root"
+      - name: Assemble source archive, checksums and build provenance
+        if: steps.plan.outputs.build == 'true'
+        run: |
+          python3 openwrt/ci/assemble_release.py \
+            --plan "$RUNNER_TEMP/openwrt-plan.json" --out "$RUNNER_TEMP/openwrt-dist"
+      - name: Push tested merge and publish verified release assets
+        if: steps.plan.outputs.build == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 openwrt/ci/publish_release.py \
+            --plan "$RUNNER_TEMP/openwrt-plan.json" --out "$RUNNER_TEMP/openwrt-dist"
+      - name: Report result
+        if: success()
+        env:
+          RELEASE_TAG: ${{ steps.plan.outputs.release_tag }}
+          BUILT: ${{ steps.plan.outputs.build }}
+        run: |
+          {
+            echo '## OpenWrt release'
+            echo "Release: https://github.com/$GITHUB_REPOSITORY/releases/tag/$RELEASE_TAG"
+            echo "Built in this run: $BUILT"
+            echo 'No router or TV playback acceptance is implied by CI success.'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Report stopped publication
+        if: failure()
+        run: |
+          echo 'OpenWrt checks failed. No new release was published; see the failed step. Resolve merge conflicts or test failures before retrying.' >> "$GITHUB_STEP_SUMMARY"

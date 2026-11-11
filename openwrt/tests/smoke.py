@@ -29,7 +29,7 @@ with tempfile.TemporaryDirectory(prefix='hongguo-smoke-') as temp:
    for path in ['/?platform=desktop','/app.js','/desktop.js','/api/v1/status','/api/v1/account','/api/v1/library']:
     with request(path) as response:
      assert response.status==200,(path,response.status,response.read()[:100])
-     if path=='/api/v1/status':assert json.load(response)['version']=='0.1.0-openwrt'
+     if path=='/api/v1/status':assert json.load(response)['version']==os.environ.get('HONGGUO_CORE_VERSION','0.1.0-openwrt')
    with request('/api/v1/library',headers={'Origin':'http://evil.example'}) as response:assert response.status==403
    with request('/api/v1/library',headers={'Host':'evil.example'}) as response:assert response.status==403
    with request('/') as response:assert 'platform=desktop' in response.url

@@ -65,8 +65,11 @@ scheduler is the only OpenWrt file added to `main`; integration code stays on
 
 The workflow checks the latest stable release in `aston314/hongguo-tv-releases`
 at minute 17 of each hour, resolves the matching `vMAJOR.MINOR.PATCH` source tag
-in `aston314/hongguo-tv`, and merges that commit into the current `openwrt`
-branch. It never force-pushes or discards local changes. GitHub schedules may be
+in `aston314/hongguo-tv`, and integrates its source changes into the current `openwrt`
+branch with a three-way patch. The diff excludes `.github/workflows/**`, keeping
+this fork's workflows intact and avoiding a workflow-write permission dependency
+for the runtime `GITHUB_TOKEN`. The upstream commit is recorded as provenance;
+upstream workflow commits are not added as Git parents. It never force-pushes or discards local changes. GitHub schedules may be
 delayed; public-repository schedules can be disabled after 60 days of inactivity.
 Fork workflows may need one-time enabling under the repository's Actions tab.
 

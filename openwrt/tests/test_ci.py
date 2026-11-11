@@ -44,6 +44,16 @@ class ReleasePlanningTests(unittest.TestCase):
   self.assertEqual(self.command(self.repo,'rev-parse','HEAD'),before)
   self.assertEqual(self.command(self.repo,'status','--porcelain'),'')
   self.assertEqual(self.command(self.bare,'rev-parse','refs/heads/openwrt'),self.initial)
+ def test_upstream_workflows_are_excluded_from_source_update(self):
+  workflows=self.repo/'.github/workflows';workflows.mkdir(parents=True)
+  (workflows/'local.yml').write_text('name: local integration workflow\n')
+  self.command(self.repo,'add','.');self.command(self.repo,'commit','-m','own workflow')
+  theirs=self.upstream/'.github/workflows';theirs.mkdir(parents=True)
+  (theirs/'upstream.yml').write_text('name: upstream-only workflow\n')
+  self.upstream_release();self.plan()
+  self.assertFalse((workflows/'upstream.yml').exists())
+  self.assertEqual((workflows/'local.yml').read_text(),'name: local integration workflow\n')
+  self.assertEqual((self.repo/'core.txt').read_text(),'upstream update\n')
  def test_completed_release_is_skipped(self):
   self.upstream_release();plan=self.plan();self.command(self.repo,'tag',plan['release_tag']);self.command(self.repo,'push','origin','openwrt',plan['release_tag'])
   names=[plan['package'],plan['source_archive'],'SHA256SUMS','BUILD-INFO.json','INSTALL-zh-CN.txt']
@@ -71,6 +81,12 @@ class InputAndPublicationTests(unittest.TestCase):
  def test_tag_input_cannot_inject_commands_or_references(self):
   for tag in ['v1.2.3;echo bad','main','refs/heads/main','v1.2.3\nBAD=1','../x']:
    with self.subTest(tag=tag),self.assertRaises(ValueError):prepare.select_upstream(tag)
+ def test_desktop_and_prerelease_updates_do_not_hide_stable_source(self):
+  releases=[{'tag_name':'desktop-v9.0.0'}, {'tag_name':'v2.0.0','prerelease':True}, {'tag_name':'v1.0.8'}, {'tag_name':'v1.0.9'}, {'tag_name':'v3.0.0','draft':True}]
+  with mock.patch.object(prepare,'github_json',return_value=releases):self.assertEqual(prepare.select_upstream(''),'v1.0.9')
+ def test_manual_tag_must_be_published_stable(self):
+  with mock.patch.object(prepare,'github_json',return_value={'tag_name':'v1.2.3','prerelease':True}):
+   with self.assertRaisesRegex(RuntimeError,'published stable'):prepare.select_upstream('v1.2.3')
  def test_publisher_rejects_checkout_change_before_any_upload(self):
   with mock.patch.object(publisher,'run',return_value='another-commit') as run:
    with self.assertRaisesRegex(RuntimeError,'changed after build'):

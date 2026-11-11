@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Merge a published upstream version into a clean OpenWrt checkout; no push."""
+"""Integrate upstream source into a clean OpenWrt checkout; keep local workflows."""
 import argparse,json,os,pathlib,re,subprocess,urllib.error,urllib.request
 
 UPSTREAM='aston314/hongguo-tv'
@@ -24,15 +24,22 @@ def github_json(repository,path,missing=False):
 
 
 def select_upstream(tag):
- if not tag:
-  release=github_json(RELEASES,'releases/latest')
+ if tag:
+  if not TAG_RE.fullmatch(tag):raise ValueError('Upstream tag must be vMAJOR.MINOR.PATCH')
+  release=github_json(RELEASES,'releases/tags/'+tag)
   if release.get('draft') or release.get('prerelease'):raise RuntimeError('Expected a published stable upstream release')
-  tag=release['tag_name']
- if not TAG_RE.fullmatch(tag):raise ValueError('Upstream tag must be vMAJOR.MINOR.PATCH')
- return tag
+  return tag
+ # Desktop/webOS releases share this repository: do not let an unrelated
+ # latest release hide the stable vMAJOR.MINOR.PATCH source line.
+ for page in range(1,6):
+  releases=github_json(RELEASES,'releases?per_page=100&page='+str(page))
+  candidates=[r['tag_name'] for r in releases if not r.get('draft') and not r.get('prerelease') and TAG_RE.fullmatch(r.get('tag_name',''))]
+  if candidates:return max(candidates,key=lambda value:tuple(map(int,value[1:].split('.'))))
+  if len(releases)<100:break
+ raise RuntimeError('No published stable upstream source release found')
 
 
-def merge_upstream(repo,tag,source_url):
+def integrate_upstream(repo,tag,source_url):
  original=git(repo,'rev-parse','HEAD')
  tracked_file=repo/'openwrt/UPSTREAM.json'
  tracked=json.loads(tracked_file.read_text()) if tracked_file.exists() else None
@@ -47,21 +54,27 @@ def merge_upstream(repo,tag,source_url):
   raise RuntimeError('Upstream tag moved since the last build; manual review required')
  git(repo,'config','user.name','github-actions[bot]')
  git(repo,'config','user.email','41898282+github-actions[bot]@users.noreply.github.com')
- result=git(repo,'merge','--no-ff','--no-edit',upstream,check=False)
- if result.returncode:
-  conflicts=git(repo,'diff','--name-only','--diff-filter=U')
-  git(repo,'merge','--abort',check=False)
-  raise RuntimeError('Upstream merge failed; no branch or release was published. Conflicts: '+(conflicts or result.stderr.strip()))
+ # Import source changes with a three-way patch, not upstream workflow commits.
+ # GITHUB_TOKEN cannot be assumed to have workflow-file write permission.
+ # Starting from a clean checkout makes a failed patch safely reversible.
+ base=tracked['commit'] if tracked else git(repo,'merge-base',original,upstream)
+ patch=subprocess.check_output(['git','-C',str(repo),'diff','--binary','--full-index',base,upstream,'--','.',':(exclude).github/workflows/**'])
+ if patch:
+  result=subprocess.run(['git','-C',str(repo),'apply','--3way','--index'],input=patch,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+  if result.returncode:
+   conflicts=git(repo,'diff','--name-only','--diff-filter=U')
+   git(repo,'reset','--hard',original)
+   raise RuntimeError('Upstream integration failed; no branch or release was published. Conflicts: '+(conflicts or result.stderr.decode(errors='replace').strip()))
  state=repo/'openwrt/UPSTREAM.json'
  state.write_text(json.dumps({'repository':UPSTREAM,'tag':tag,'commit':upstream},indent=2)+'\n')
  git(repo,'add','--','openwrt/UPSTREAM.json')
  if git(repo,'diff','--cached','--quiet',check=False).returncode:
-  git(repo,'commit','-m','chore(openwrt): track upstream '+tag)
+  git(repo,'commit','-m','chore(openwrt): integrate upstream '+tag)
  return original,upstream,git(repo,'rev-parse','HEAD')
 
 
 def make_plan(repo,tag,source_url,repository,lookup=github_json):
- original,upstream,commit=merge_upstream(repo,tag,source_url)
+ original,upstream,commit=integrate_upstream(repo,tag,source_url)
  revision=(repo/'openwrt/RELEASE').read_text().strip()
  if not re.fullmatch(r'[1-9][0-9]{0,5}',revision):raise ValueError('openwrt/RELEASE must be a positive integer')
  version=TAG_RE.fullmatch(tag).group(1)+'-r'+revision

@@ -1,6 +1,6 @@
 /* Loaded by the LAN HTML wrapper, never by Android/Wails. */
 .ow-mobile-header, .ow-mobile-shade { display: none; }
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   html.openwrt-web { --ow-header: calc(56px + env(safe-area-inset-top, 0px)); }
   html.openwrt-web, .openwrt-web body { min-width: 0; min-height: 0; overflow: hidden; -webkit-text-size-adjust: 100%; }
   .openwrt-web button, .openwrt-web a { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
@@ -131,7 +131,7 @@
   .openwrt-web .follow-grid, .openwrt-web .reservation-grid, .openwrt-web .actor-works-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .openwrt-web .detail-header .detail-cover { display: none; }
 }
-@media (max-width: 900px) and (max-height: 500px) {
+@media (max-width: 960px) and (max-height: 500px) {
   .openwrt-web .hero-title, .openwrt-web .hero-episode, .openwrt-web .hero-summary, .openwrt-web .hero-top-copy { display: none; }
   .openwrt-web .right-actions { top: 45%; gap: 2px; }
   .openwrt-web .round-action small { display: none; }

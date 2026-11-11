@@ -111,13 +111,13 @@ Published packages are downloadable in Releases; routers are not auto-upgraded.
 
 The authenticated LAN HTML wrapper adds `openwrt-mobile.css` and
 `openwrt-mobile.js`; the upstream index.html, app.css and app.js stay untouched.
-At widths up to 900px the page uses a touch-friendly navigation drawer,
+At widths up to 960px the page uses a touch-friendly navigation drawer,
 responsive poster grids and dialogs, scrollable playback controls, safe-area
 padding, inline video and visual-viewport sizing for the on-screen keyboard.
 At wider widths the original desktop layout remains active. Android/Wails
 hosts do not load these LAN-only presentation files.
 
-CI tests the real LAN server in Chromium at 320, 390, 768, 844 landscape and
+CI tests the real LAN server in Chromium at 320, 390, 768, 844/932 landscape and
 1280 pixel widths with synthetic APIs and a generated VP8/WebM clip. It checks
 navigation, dialogs, account/settings, player bounds, orientation changes and
 returning to desktop, and retains layout screenshots for seven days. No real

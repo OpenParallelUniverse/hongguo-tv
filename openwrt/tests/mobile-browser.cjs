@@ -30,8 +30,8 @@ let browser;
   const coreVersion=(await (await api.get(base+'/api/v1/status')).json()).version;
   await api.dispose();
   browser = await chromium.launch({ headless: true });
-  for (const size of [{width:320,height:740},{width:390,height:844},{width:768,height:1024},{width:844,height:390},{width:1280,height:800}]) {
-    const mobile = size.width <= 900;
+  for (const size of [{width:320,height:740},{width:390,height:844},{width:768,height:1024},{width:844,height:390},{width:932,height:430},{width:1280,height:800}]) {
+    const mobile = size.width <= 960;
     const context = await browser.newContext({ viewport: size, hasTouch: mobile, isMobile: mobile, reducedMotion: 'reduce',
       httpCredentials: { username: 'hongguo', password: 'test-password-123' } });
     const page = await context.newPage(); const errors = [];
@@ -123,7 +123,7 @@ let browser;
       throw error;
     } finally {await context.close();}
   }
-  if (process.env.MOBILE_VALIDATION_REPORT) fs.writeFileSync(process.env.MOBILE_VALIDATION_REPORT,JSON.stringify({commit:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),core_version:coreVersion,viewports:[320,390,768,844,1280],passed:true},null,2)+'\n');
+  if (process.env.MOBILE_VALIDATION_REPORT) fs.writeFileSync(process.env.MOBILE_VALIDATION_REPORT,JSON.stringify({commit:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),core_version:coreVersion,viewports:[320,390,768,844,932,1280],passed:true},null,2)+'\n');
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(async()=>{
   if (browser) await browser.close(); server.kill('SIGTERM');fs.closeSync(log);
 });

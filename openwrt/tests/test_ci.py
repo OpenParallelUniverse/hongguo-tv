@@ -101,7 +101,7 @@ class InputAndPublicationTests(unittest.TestCase):
  def test_browser_validation_is_bound_to_source_and_version(self):
   with tempfile.TemporaryDirectory() as directory:
    out=pathlib.Path(directory);plan={'release_commit':'abc','core_version':'1-openwrt'}
-   report={'commit':'other','core_version':'1-openwrt','viewports':[320,390,768,844,1280],'passed':True}
+   report={'commit':'other','core_version':'1-openwrt','viewports':[320,390,768,844,932,1280],'passed':True}
    (out/'mobile-check.json').write_text(json.dumps(report))
    with self.assertRaisesRegex(RuntimeError,'matching mobile-browser'):assembler.mobile_validation(plan,out)
    report['commit']='abc';(out/'mobile-check.json').write_text(json.dumps(report))

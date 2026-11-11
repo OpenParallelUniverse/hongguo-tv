@@ -6,7 +6,7 @@
   var sidebar = document.querySelector('.sidebar');
   var surface = document.getElementById('main-surface');
   if (!shell || !sidebar || !surface || document.getElementById('ow-mobile-header')) return;
-  var media = window.matchMedia('(max-width: 900px)');
+  var media = window.matchMedia('(max-width: 960px)');
   var header = document.createElement('header');
   header.id = 'ow-mobile-header';
   header.className = 'ow-mobile-header';

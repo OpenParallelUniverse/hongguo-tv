@@ -9,7 +9,7 @@ def digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 def mobile_validation(plan,out):
  try:mobile=json.loads((out/'mobile-check.json').read_text())
  except (OSError,ValueError) as error:raise RuntimeError('Missing mobile-browser validation report') from error
- if mobile.get('commit')!=plan['release_commit'] or mobile.get('core_version')!=plan['core_version'] or mobile.get('passed') is not True or mobile.get('viewports')!=[320,390,768,844,1280]:
+ if mobile.get('commit')!=plan['release_commit'] or mobile.get('core_version')!=plan['core_version'] or mobile.get('passed') is not True or mobile.get('viewports')!=[320,390,768,844,932,1280]:
   raise RuntimeError('Missing matching mobile-browser validation; refusing to assemble a release')
  return mobile
 

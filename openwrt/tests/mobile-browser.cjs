@@ -65,6 +65,7 @@ let browser;
       await page.locator('html.openwrt-web').waitFor();
       assert.equal(await page.locator('.ow-mobile-header').isVisible(),mobile);
       await bounded('.app-shell');
+      if (size.width===768) await page.locator('.app-shell').evaluate(e=>e.classList.add('sidebar-icons'));
       if (mobile) {
         assert.equal(await page.locator('.sidebar').evaluate(e=>e.inert),true);
         await page.locator('.ow-mobile-menu').click(); await bounded('.sidebar');
@@ -86,6 +87,7 @@ let browser;
       }
       await page.locator('.search-result-card').first().click();
       await page.locator('#hero:not(.is-hidden)').waitFor();
+      await page.waitForFunction(()=>document.getElementById('hero-video').readyState>=2);
       await page.locator('[data-action="episodes"]').click();
       await page.locator('#detail-modal:not(.is-hidden)').waitFor();
       await bounded('.detail-dialog');

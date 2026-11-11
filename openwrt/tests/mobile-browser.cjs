@@ -32,7 +32,7 @@ let browser;
   browser = await chromium.launch({ headless: true });
   for (const size of [{width:320,height:740},{width:390,height:844},{width:768,height:1024},{width:844,height:390},{width:1280,height:800}]) {
     const mobile = size.width <= 900;
-    const context = await browser.newContext({ viewport: size, hasTouch: mobile, isMobile: mobile,
+    const context = await browser.newContext({ viewport: size, hasTouch: mobile, isMobile: mobile, reducedMotion: 'reduce',
       httpCredentials: { username: 'hongguo', password: 'test-password-123' } });
     const page = await context.newPage(); const errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -40,12 +40,12 @@ let browser;
     await page.route('**/api/v1/**', async route => {
       const url = new URL(route.request().url()), p=url.pathname;
       if (['/api/v1/health','/api/v1/status'].includes(p)) return route.continue();
-      let data = {};
+      let data = { items: [], entries: [] };
       if (p === '/api/v1/account') data = { logged_in: false, sync: { state: 'idle' } };
-      else if (p === '/api/v1/library') data = { history: [], favorites: [], likes: [] };
+      else if (p === '/api/v1/library') data = { entries: [], history: [], favorites: [], likes: [] };
       else if (p === '/api/v1/series/detail') data = dramas.find(d => d.series_id===url.searchParams.get('series_id')) || dramas[0];
       else if (p === '/api/v1/play/info') data = {path:'/minireel-proxy/media/012345678901234567890123.mp4',quality:'1080P',qualities:['1080P'],video_width:360,video_height:640,video_codec:'h264',vid:url.searchParams.get('vid'),mode:'full'};
-      else if (p === '/api/v1/category' || p === '/api/v1/search' || p.startsWith('/api/v1/lists/') || p === '/api/v1/rank') data = {items:dramas,filters:[],ranks:[],has_more:false,next_offset:0};
+      else if (p === '/api/v1/category' || p === '/api/v1/search' || p.startsWith('/api/v1/lists/') || p === '/api/v1/rank') data = {items:dramas,filters:[{type:'genre',label:'分类',options:[{id:'',label:'全部'}]}],ranks:[],has_more:false,next_offset:0};
       return route.fulfill({contentType:'application/json',body:JSON.stringify({ok:true,data})});
     });
     async function bounded(selector) {

@@ -49,6 +49,12 @@ let browser;
       return route.fulfill({contentType:'application/json',body:JSON.stringify({ok:true,data})});
     });
     async function bounded(selector) {
+      // Rotation and VisualViewport notifications settle after setViewportSize returns.
+      await page.waitForFunction(selector => {
+        const e=document.querySelector(selector); if(!e) return false;
+        const r=e.getBoundingClientRect();
+        return r.left>=-1 && r.right<=innerWidth+1 && r.top>=-1 && r.bottom<=innerHeight+1;
+      },selector,{timeout:5000});
       const bounds = await page.locator(selector).evaluate(e => {
         const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:innerWidth,height:innerHeight};
       });
@@ -112,6 +118,7 @@ let browser;
         await page.setViewportSize({width:390,height:844});
         await page.locator('.ow-mobile-menu').click();
         await page.setViewportSize({width:1280,height:800});
+        await page.waitForFunction(()=>!document.querySelector('.sidebar').inert && !document.getElementById('main-surface').inert);
         assert.equal(await page.locator('.sidebar').evaluate(e=>e.inert),false);
         assert.equal(await page.locator('#main-surface').evaluate(e=>e.inert),false);
       }

@@ -111,7 +111,7 @@
   .openwrt-web .detail-header-actions { flex-wrap: wrap; }
   .openwrt-web .detail-tabs { gap: 6px; padding: 4px 12px 0; overflow-x: auto; }
   .openwrt-web .detail-tab { flex-shrink: 0; font-size: 15px; padding: 0 9px; }
-  .openwrt-web .detail-episodes { grid-template-columns: repeat(5, minmax(0, 1fr)); height: auto; max-height: 42vh; padding: 12px; gap: 8px; overflow-y: auto; }
+  .openwrt-web .detail-episodes { display: grid; align-content: start; grid-template-columns: repeat(5, minmax(0, 1fr)); height: auto; max-height: 42vh; padding: 12px; gap: 8px; overflow-y: auto; }
   .openwrt-web .detail-episode { min-width: 0; min-height: 44px; padding: 8px 4px; font-size: 15px; }
   .openwrt-web .detail-series-panel { height: 45vh; padding: 10px; }
   .openwrt-web .detail-related-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }

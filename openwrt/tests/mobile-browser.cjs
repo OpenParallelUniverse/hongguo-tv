@@ -91,6 +91,7 @@ let browser;
       await page.locator('[data-action="episodes"]').click();
       await page.locator('#detail-modal:not(.is-hidden)').waitFor();
       await bounded('.detail-dialog');
+      if (mobile) assert.equal(await page.locator('.detail-episodes').evaluate(e=>getComputedStyle(e).display),'grid');
       await page.screenshot({path:path.join(shots,size.width+'-detail.png')});
       await page.locator('.detail-close').click();
       await navigate('account');

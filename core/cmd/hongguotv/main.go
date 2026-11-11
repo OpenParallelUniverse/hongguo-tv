@@ -147,7 +147,7 @@ func main() {
 	mux.HandleFunc("/minireel-proxy/media/", handleMiniReelMedia)
 	mux.Handle("/", serveUI(root))
 
-	if err := serveLocalCore(ctx, *port, *instanceID, *parentPID, s.withLANAccess(s.withCORS(mux))); err != nil {
+	if err := serveLocalCore(ctx, *port, *instanceID, *parentPID, s.withLANAccess(s.withLANBrowserUI(s.withCORS(mux)))); err != nil {
 		log.Fatal(err)
 	}
 }

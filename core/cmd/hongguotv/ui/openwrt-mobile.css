@@ -1,0 +1,142 @@
+/* Loaded by the LAN HTML wrapper, never by Android/Wails. */
+.ow-mobile-header, .ow-mobile-shade { display: none; }
+@media (max-width: 900px) {
+  html.openwrt-web { --ow-header: calc(56px + env(safe-area-inset-top, 0px)); }
+  html.openwrt-web, .openwrt-web body { min-width: 0; min-height: 0; overflow: hidden; -webkit-text-size-adjust: 100%; }
+  .openwrt-web button, .openwrt-web a { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .openwrt-web input, .openwrt-web textarea { font-size: 16px; }
+  .openwrt-web .app-shell, .openwrt-web .app-shell.is-cinema {
+    position: fixed; inset: var(--ow-header) 0 0; width: 100%; min-width: 0; min-height: 0;
+    height: calc(var(--ow-viewport, 100vh) - var(--ow-header)); overflow: hidden;
+  }
+  .openwrt-web .main-surface, .openwrt-web .app-shell.sidebar-icons .main-surface,
+  .openwrt-web .app-shell.is-cinema .main-surface { position: relative; flex: 1 1 auto; width: 100%; min-width: 0; height: 100%; margin: 0; }
+  .openwrt-web .ow-mobile-header {
+    position: fixed; inset: 0 0 auto; z-index: 26; display: flex; align-items: center; gap: 10px;
+    height: var(--ow-header); padding: env(safe-area-inset-top, 0px) max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px));
+    background: #15151c; border-bottom: 1px solid #292a34;
+  }
+  .ow-mobile-title { flex: 1; min-width: 0; font-size: 18px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .ow-mobile-menu, .ow-mobile-search { min-width: 44px; min-height: 44px; border-radius: 10px; background: #272831; color: #f7f7fb; font-size: 16px; }
+  .ow-mobile-menu { font-size: 23px; }
+  .ow-mobile-search { padding: 0 14px; }
+  .openwrt-web .sidebar, .openwrt-web .app-shell.sidebar-icons .sidebar {
+    position: fixed; z-index: 101; top: var(--ow-header); bottom: 0; left: 0;
+    display: flex; width: min(82vw, 280px); max-width: 280px; height: auto; min-height: 0;
+    padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px)); transform: translateX(-105%);
+    visibility: hidden; transition: transform .18s ease, visibility .18s; box-shadow: 16px 0 45px #0008;
+  }
+  .openwrt-web.ow-menu-open .sidebar { transform: translateX(0); visibility: visible; }
+  .openwrt-web.ow-menu-open .ow-mobile-header { z-index: 102; }
+  .openwrt-web.ow-menu-open .ow-mobile-shade { display: block; position: fixed; z-index: 100; inset: var(--ow-header) 0 0; width: 100%; background: #0009; }
+  .openwrt-web .app-shell.sidebar-icons .brand { justify-content: flex-start; padding: 0 9px; }
+  .openwrt-web .app-shell.sidebar-icons .brand > span:last-child, .openwrt-web .app-shell.sidebar-icons .side-item > span { display: inline; }
+  .openwrt-web .app-shell.sidebar-icons .side-item, .openwrt-web .side-item { display: flex; align-items: center; gap: 14px; min-height: 46px; padding: 8px 14px; font-size: 16px; text-align: left; }
+  .openwrt-web .app-shell.sidebar-icons .brand-mark { flex-basis: 29px; width: 29px; height: 29px; }
+  .openwrt-web .app-shell.sidebar-icons .side-icon, .openwrt-web .side-icon { flex: 0 0 24px; width: 24px; height: 24px; }
+  .openwrt-web .side-nav { gap: 4px; margin-top: 8px; padding: 4px; }
+  .openwrt-web .sidebar-bottom { flex-shrink: 0; }
+  .openwrt-web .watching-return-wrap { display: none; }
+  .openwrt-web .top-bar { height: 56px; min-height: 56px; padding: 4px 12px; }
+  .openwrt-web .page-context, .openwrt-web .top-status { display: none; }
+  .openwrt-web .channel-tabs { width: 100%; max-width: 100%; margin: 0; overflow-x: auto; border-radius: 12px; scrollbar-width: none; }
+  .openwrt-web .channel-tab { min-width: 64px; min-height: 40px; padding: 8px 12px; font-size: 14px; }
+  .openwrt-web .search-page, .openwrt-web .page-workspace, .openwrt-web .page-placeholder {
+    top: 56px; right: 0; bottom: 0; left: 0; min-width: 0;
+    padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 0px)); overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  }
+  .openwrt-web .main-surface.has-search .top-bar, .openwrt-web .main-surface.has-workspace .top-bar { display: none; }
+  .openwrt-web .main-surface.has-search .search-page, .openwrt-web .main-surface.has-workspace .page-workspace { top: 0; }
+  .openwrt-web .page-workspace h1, .openwrt-web .search-page h1 { font-size: 24px; }
+  .openwrt-web .search-heading-row { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 16px; }
+  .openwrt-web .search-box { width: 100%; gap: 8px; }
+  .openwrt-web .search-input-wrap { flex: 1 1 160px; width: auto; min-width: 0; }
+  .openwrt-web .search-input { width: 100%; min-height: 44px; font-size: 16px; }
+  .openwrt-web .search-action { min-height: 44px; margin: 0; font-size: 15px; }
+  .openwrt-web .search-suggestions { max-width: 100%; }
+  .openwrt-web .filter-row { flex-wrap: wrap; gap: 6px; }
+  .openwrt-web .filter-options { flex-wrap: wrap; min-width: 0; }
+  .openwrt-web .search-results, .openwrt-web .new-grid, .openwrt-web .library-grid,
+  .openwrt-web .follow-grid, .openwrt-web .reservation-grid, .openwrt-web .actor-works-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 12px; }
+  .openwrt-web .search-result-card, .openwrt-web .new-card, .openwrt-web .library-tile, .openwrt-web .follow-card { min-width: 0; width: auto; margin: 0; }
+  .openwrt-web .rank-heading-row, .openwrt-web .library-heading-row, .openwrt-web .new-heading-row { flex-wrap: wrap; gap: 12px; }
+  .openwrt-web .rank-layout { display: block; }
+  .openwrt-web .rank-subnav { flex-direction: row; overflow-x: auto; margin-bottom: 12px; padding-bottom: 6px; }
+  .openwrt-web .rank-subnav > * { flex-shrink: 0; }
+  .openwrt-web .rank-row { grid-template-columns: 24px 64px minmax(0, 1fr); gap: 10px; min-height: 110px; padding: 10px 2px; }
+  .openwrt-web .rank-row-image, .openwrt-web .rank-row > .drama-poster { width: 64px; }
+  .openwrt-web .rank-row-side { display: none; }
+  .openwrt-web .rank-row-title { font-size: 17px; }
+  .openwrt-web .account-layout { flex-direction: column; gap: 16px; margin-top: 16px; }
+  .openwrt-web .account-card, .openwrt-web .settings-card { width: 100%; min-width: 0; max-width: 100%; padding: 18px; }
+  .openwrt-web .account-input-row, .openwrt-web .account-heading { flex-wrap: wrap; }
+  .openwrt-web .account-input-wrap { flex: 1 1 150px; min-width: 0; }
+  .openwrt-web .account-input { width: 100%; min-width: 0; font-size: 16px; }
+  .openwrt-web .account-action, .openwrt-web .recommended-app-action { min-height: 44px; padding: 10px 12px; font-size: 15px; }
+  .openwrt-web .app-update-actions, .openwrt-web .library-type-filters { flex-wrap: wrap; gap: 8px; }
+  .openwrt-web .account-login-qr-box { width: 220px; height: 220px; }
+  .openwrt-web .watch-stat-heading, .openwrt-web .watch-stat-heading-actions { flex-wrap: wrap; margin-left: 0; gap: 8px; }
+  .openwrt-web .watch-stat-cards { flex-wrap: wrap; gap: 10px; margin: 0 0 16px; }
+  .openwrt-web .watch-stat-card { flex: 1 1 130px; margin: 0; padding: 14px; }
+  .openwrt-web .watch-stat-panel { padding: 12px; }
+  .openwrt-web .hero-top-copy { top: 64px; left: 16px; right: 72px; }
+  .openwrt-web .hero-top-copy strong { max-width: 100%; font-size: 15px; }
+  .openwrt-web .hero-top-right { display: none; }
+  .openwrt-web .hero-title, .openwrt-web .hero-episode, .openwrt-web .hero-summary { left: 16px; max-width: calc(100% - 90px); }
+  .openwrt-web .hero-title { bottom: 176px; font-size: 18px; }
+  .openwrt-web .hero-episode { bottom: 151px; font-size: 13px; }
+  .openwrt-web .hero-summary { bottom: 112px; max-height: 36px; font-size: 12px; }
+  .openwrt-web .right-actions { right: 10px; gap: 8px; }
+  .openwrt-web .round-action { min-width: 44px; width: 44px; min-height: 44px; padding: 4px; }
+  .openwrt-web .round-action svg { width: 24px; height: 24px; }
+  .openwrt-web .bottom-controls { right: 10px; left: 10px; bottom: max(10px, env(safe-area-inset-bottom, 0px)); gap: 2px; }
+  .openwrt-web .playback-timeline { gap: 8px; }
+  .openwrt-web .time-label { font-size: 12px; }
+  .openwrt-web .playback-buttons { overflow-x: auto; overflow-y: hidden; gap: 6px; padding: 4px; scrollbar-width: none; }
+  .openwrt-web .playback-utility-group { flex-shrink: 0; margin-left: 0; gap: 6px; }
+  .openwrt-web .playback-buttons .control-button.has-icon { flex: 0 0 44px; width: 44px; min-width: 44px; height: 44px; }
+  .openwrt-web .playback-buttons .control-button.has-icon .control-content { width: 22px; max-width: 22px; }
+  .openwrt-web .playback-buttons .control-button.has-icon .control-label { display: none; }
+  .openwrt-web .playback-buttons .control-button.has-icon .control-content > svg { margin-right: 0; }
+  .openwrt-web .detail-modal, .openwrt-web .detail-modal.is-playback-drawer { inset: 0; width: 100%; padding: 12px; background: #000b; pointer-events: auto; }
+  .openwrt-web .detail-dialog, .openwrt-web .detail-modal.is-playback-drawer .detail-dialog { width: 100%; min-width: 0; max-width: 560px; height: auto; max-height: calc(var(--ow-viewport, 100vh) - 24px); border: 1px solid #41424e; border-radius: 14px; }
+  .openwrt-web .detail-header { padding: 14px; gap: 10px; }
+  .openwrt-web .detail-cover { flex: 0 0 64px; width: 64px; height: 96px; }
+  .openwrt-web .detail-copy { min-width: 0; }
+  .openwrt-web .detail-title-row { flex-wrap: wrap; gap: 8px; }
+  .openwrt-web .detail-title { font-size: 19px; overflow-wrap: anywhere; }
+  .openwrt-web .detail-intro { font-size: 13px; }
+  .openwrt-web .detail-close { min-width: 40px; min-height: 44px; margin: 0; padding: 0 8px; }
+  .openwrt-web .detail-header-actions { flex-wrap: wrap; }
+  .openwrt-web .detail-tabs { gap: 6px; padding: 4px 12px 0; overflow-x: auto; }
+  .openwrt-web .detail-tab { flex-shrink: 0; font-size: 15px; padding: 0 9px; }
+  .openwrt-web .detail-episodes { grid-template-columns: repeat(5, minmax(0, 1fr)); height: auto; max-height: 42vh; padding: 12px; gap: 8px; overflow-y: auto; }
+  .openwrt-web .detail-episode { min-width: 0; min-height: 44px; padding: 8px 4px; font-size: 15px; }
+  .openwrt-web .detail-series-panel { height: 45vh; padding: 10px; }
+  .openwrt-web .detail-related-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .openwrt-web .discussion-panel, .openwrt-web .playback-command-menu { position: fixed; inset: 0; width: 100%; min-width: 0; max-width: 100%; padding: 16px; }
+  .openwrt-web .player-options { right: 12px; bottom: 112px; width: min(320px, calc(100% - 24px)); max-height: calc(100% - 130px); overflow-y: auto; }
+  .openwrt-web .player-options.is-diagnostics { inset: 12px; width: auto; max-width: none; max-height: none; padding: 14px; transform: none; }
+  .openwrt-web .diagnostic-scroll { max-height: calc(var(--ow-viewport, 100vh) - 150px); }
+  .openwrt-web [class$='-dialog'] { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+  .openwrt-web .confirm-dialog, .openwrt-web .core-connection-dialog, .openwrt-web .rank-filter-dialog { width: 100%; max-width: 560px; padding: 18px; }
+  .openwrt-web .confirm-actions { flex-wrap: wrap; gap: 8px; }
+  .openwrt-web .notice, .openwrt-web .notification-popup { max-width: calc(100vw - 24px); font-size: 14px; overflow-wrap: anywhere; }
+  .openwrt-web.ow-cinema { --ow-header: 0px; }
+  .openwrt-web.ow-cinema .ow-mobile-header { display: none; }
+}
+@media (max-width: 480px) {
+  .openwrt-web .search-results, .openwrt-web .new-grid, .openwrt-web .library-grid,
+  .openwrt-web .follow-grid, .openwrt-web .reservation-grid, .openwrt-web .actor-works-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .openwrt-web .detail-header .detail-cover { display: none; }
+}
+@media (max-width: 900px) and (max-height: 500px) {
+  .openwrt-web .hero-title, .openwrt-web .hero-episode, .openwrt-web .hero-summary, .openwrt-web .hero-top-copy { display: none; }
+  .openwrt-web .right-actions { top: 45%; gap: 2px; }
+  .openwrt-web .round-action small { display: none; }
+  .openwrt-web .detail-header { min-height: 0; }
+  .openwrt-web .detail-episodes { max-height: 35vh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .openwrt-web .sidebar { transition: none; }
+}

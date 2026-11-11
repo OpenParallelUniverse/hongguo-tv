@@ -97,7 +97,7 @@ func TestLANRealEmbeddedPageAndMediaRange(t *testing.T) {
 	mux.HandleFunc("/fixture.mp4", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeContent(w, r, "fixture.mp4", s.startedAt, strings.NewReader("0123456789"))
 	})
-	h := s.withLANAccess(s.withCORS(mux))
+	h := s.withLANAccess(s.withLANBrowserUI(s.withCORS(mux)))
 	for _, tc := range []struct {
 		path, byteRange string
 		want            int
@@ -190,5 +190,32 @@ func TestLANWholeFileDownloadLimitRemovesPartialFile(t *testing.T) {
 	}
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
 		t.Fatalf("partial download retained: %v", err)
+	}
+}
+
+func TestLANMobileAssetsDoNotChangeEmbeddedUpstreamHTML(t *testing.T) {
+	root, err := fs.Sub(uiFiles, "ui")
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := &server{lanAccess: &lanAccess{passwordHash: sha256.Sum256([]byte("test-password-123"))}}
+	for _, lan := range []bool{false, true} {
+		handler := serveUI(root)
+		if lan {
+			handler = s.withLANAccess(s.withLANBrowserUI(handler))
+		}
+		r := httptest.NewRequest("GET", "http://127.0.0.1:8797/?platform=desktop", nil)
+		r.RemoteAddr = "127.0.0.1:1234"
+		r.SetBasicAuth("hongguo", "test-password-123")
+		w := httptest.NewRecorder()
+		handler.ServeHTTP(w, r)
+		if w.Code != 200 {
+			t.Fatalf("UI status: %d", w.Code)
+		}
+		for _, asset := range []string{"/openwrt-mobile.css", "/openwrt-mobile.js"} {
+			if strings.Contains(w.Body.String(), asset) != lan {
+				t.Fatalf("LAN-only asset %s (LAN=%v)", asset, lan)
+			}
+		}
 	}
 }

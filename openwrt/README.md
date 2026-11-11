@@ -106,3 +106,21 @@ published source tag. No PAT or additional repository secret is required:
 Repository/organization policy must permit Actions and contents writes.
 CI success does not establish real playback or full router lifecycle acceptance.
 Published packages are downloadable in Releases; routers are not auto-upgraded.
+
+## Mobile browser layout
+
+The authenticated LAN HTML wrapper adds `openwrt-mobile.css` and
+`openwrt-mobile.js`; the upstream index.html, app.css and app.js stay untouched.
+At widths up to 900px the page uses a touch-friendly navigation drawer,
+responsive poster grids and dialogs, scrollable playback controls, safe-area
+padding, inline video and visual-viewport sizing for the on-screen keyboard.
+At wider widths the original desktop layout remains active. Android/Wails
+hosts do not load these LAN-only presentation files.
+
+CI tests the real LAN server in Chromium at 320, 390, 768, 844 landscape and
+1280 pixel widths with synthetic APIs and a generated H.264 clip. It checks
+navigation, dialogs, account/settings, player bounds, orientation changes and
+returning to desktop, and retains layout screenshots for seven days. No real
+account or upstream video is used. These presentation assets remain independent
+of upstream UI files; incompatible future DOM changes fail the browser test and
+stop publication instead of silently shipping a broken mobile page.

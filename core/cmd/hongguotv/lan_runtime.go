@@ -99,12 +99,13 @@ func (s *server) withLANAccess(next http.Handler) http.Handler {
 			return
 		}
 		// Browser mode supports ordinary mouse/keyboard input by default.
-		if r.URL.Path == "/" && r.Method == http.MethodGet && r.URL.Query().Get("platform") == "" {
+		if (r.URL.Path == "/" || r.URL.Path == "/index.html") && r.Method == http.MethodGet && r.URL.Query().Get("platform") == "" {
 			q := r.URL.Query()
 			q.Set("platform", "desktop")
 			http.Redirect(w, r, "/?"+q.Encode(), http.StatusFound)
 			return
 		}
+
 		next.ServeHTTP(w, r)
 	})
 }

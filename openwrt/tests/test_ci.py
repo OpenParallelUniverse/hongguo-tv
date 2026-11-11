@@ -7,7 +7,7 @@ def load(name):
  spec=importlib.util.spec_from_file_location(name,ROOT/'ci'/(name+'.py'))
  module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);return module
 
-prepare=load('prepare_release');publisher=load('publish_release')
+prepare=load('prepare_release');publisher=load('publish_release');assembler=load('assemble_release')
 
 class ReleasePlanningTests(unittest.TestCase):
  def setUp(self):
@@ -44,6 +44,13 @@ class ReleasePlanningTests(unittest.TestCase):
   self.assertEqual(self.command(self.repo,'rev-parse','HEAD'),before)
   self.assertEqual(self.command(self.repo,'status','--porcelain'),'')
   self.assertEqual(self.command(self.bare,'rev-parse','refs/heads/openwrt'),self.initial)
+ def test_upstream_ui_changes_preserve_mobile_addons(self):
+  local=self.repo/'ui';local.mkdir();(local/'openwrt-mobile.css').write_text('/* fork mobile overrides */\n')
+  self.command(self.repo,'add','.');self.command(self.repo,'commit','-m','mobile addon')
+  remote=self.upstream/'ui';remote.mkdir();(remote/'app.css').write_text('/* next upstream UI */\n')
+  self.upstream_release();self.plan()
+  self.assertEqual((local/'openwrt-mobile.css').read_text(),'/* fork mobile overrides */\n')
+  self.assertEqual((local/'app.css').read_text(),'/* next upstream UI */\n')
  def test_upstream_workflows_are_excluded_from_source_update(self):
   workflows=self.repo/'.github/workflows';workflows.mkdir(parents=True)
   (workflows/'local.yml').write_text('name: local integration workflow\n')
@@ -87,6 +94,18 @@ class InputAndPublicationTests(unittest.TestCase):
  def test_manual_tag_must_be_published_stable(self):
   with mock.patch.object(prepare,'github_json',return_value={'tag_name':'v1.2.3','prerelease':True}):
    with self.assertRaisesRegex(RuntimeError,'published stable'):prepare.select_upstream('v1.2.3')
+ def test_missing_browser_validation_stops_packaging(self):
+  with tempfile.TemporaryDirectory() as directory:
+   with self.assertRaisesRegex(RuntimeError,'validation report'):
+    assembler.mobile_validation({'release_commit':'abc','core_version':'1-openwrt'},pathlib.Path(directory))
+ def test_browser_validation_is_bound_to_source_and_version(self):
+  with tempfile.TemporaryDirectory() as directory:
+   out=pathlib.Path(directory);plan={'release_commit':'abc','core_version':'1-openwrt'}
+   report={'commit':'other','core_version':'1-openwrt','viewports':[320,390,768,844,1280],'passed':True}
+   (out/'mobile-check.json').write_text(json.dumps(report))
+   with self.assertRaisesRegex(RuntimeError,'matching mobile-browser'):assembler.mobile_validation(plan,out)
+   report['commit']='abc';(out/'mobile-check.json').write_text(json.dumps(report))
+   self.assertTrue(assembler.mobile_validation(plan,out)['passed'])
  def test_publisher_rejects_checkout_change_before_any_upload(self):
   with mock.patch.object(publisher,'run',return_value='another-commit') as run:
    with self.assertRaisesRegex(RuntimeError,'changed after build'):

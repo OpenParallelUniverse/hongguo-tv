@@ -100,6 +100,22 @@ jobs:
           npm ci --prefix openwrt/tests --ignore-scripts --no-audit --no-fund
           JSDOM_MODULE="$GITHUB_WORKSPACE/openwrt/tests/node_modules/jsdom" \
             python3 openwrt/tests/luci_dom.py "$RUNNER_TEMP/openwrt-tools/openwrt-root"
+      - name: Check phone, tablet and desktop browser layouts
+        if: steps.plan.outputs.build == 'true'
+        env:
+          MOBILE_SCREENSHOTS: ${{ runner.temp }}/openwrt-mobile-shots
+          MOBILE_VALIDATION_REPORT: ${{ runner.temp }}/openwrt-dist/mobile-check.json
+        run: |
+          openwrt/tests/node_modules/.bin/playwright install --with-deps chromium
+          node openwrt/tests/mobile-browser.cjs
+      - name: Keep browser layout screenshots
+        if: always() && steps.plan.outputs.build == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: openwrt-mobile-layouts
+          path: ${{ runner.temp }}/openwrt-mobile-shots
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Assemble source archive, checksums and build provenance
         if: steps.plan.outputs.build == 'true'
         run: |

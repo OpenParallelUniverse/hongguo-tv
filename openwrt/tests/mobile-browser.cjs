@@ -85,6 +85,8 @@ let browser;
         await page.setViewportSize(size);
       }
       await page.locator('.search-result-card').first().click();
+      await page.locator('#hero:not(.is-hidden)').waitFor();
+      await page.locator('[data-action="episodes"]').click();
       await page.locator('#detail-modal:not(.is-hidden)').waitFor();
       await bounded('.detail-dialog');
       await page.screenshot({path:path.join(shots,size.width+'-detail.png')});

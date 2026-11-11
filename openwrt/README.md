@@ -118,7 +118,7 @@ At wider widths the original desktop layout remains active. Android/Wails
 hosts do not load these LAN-only presentation files.
 
 CI tests the real LAN server in Chromium at 320, 390, 768, 844 landscape and
-1280 pixel widths with synthetic APIs and a generated H.264 clip. It checks
+1280 pixel widths with synthetic APIs and a generated VP8/WebM clip. It checks
 navigation, dialogs, account/settings, player bounds, orientation changes and
 returning to desktop, and retains layout screenshots for seven days. No real
 account or upstream video is used. These presentation assets remain independent

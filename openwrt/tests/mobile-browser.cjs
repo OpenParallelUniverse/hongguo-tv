@@ -36,7 +36,7 @@ let browser;
       httpCredentials: { username: 'hongguo', password: 'test-password-123' } });
     const page = await context.newPage(); const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    await page.route('**/minireel-proxy/media/**', route => route.fulfill({ contentType: 'video/mp4', body: media }));
+    await page.route('**/minireel-proxy/media/**', route => route.fulfill({ contentType: 'video/webm', body: media }));
     await page.route('**/api/v1/**', async route => {
       const url = new URL(route.request().url()), p=url.pathname;
       if (['/api/v1/health','/api/v1/status'].includes(p)) return route.continue();
@@ -44,7 +44,7 @@ let browser;
       if (p === '/api/v1/account') data = { logged_in: false, sync: { state: 'idle' } };
       else if (p === '/api/v1/library') data = { entries: [], history: [], favorites: [], likes: [] };
       else if (p === '/api/v1/series/detail') data = dramas.find(d => d.series_id===url.searchParams.get('series_id')) || dramas[0];
-      else if (p === '/api/v1/play/info') data = {path:'/minireel-proxy/media/012345678901234567890123.mp4',quality:'1080P',qualities:['1080P'],video_width:360,video_height:640,video_codec:'h264',vid:url.searchParams.get('vid'),mode:'full'};
+      else if (p === '/api/v1/play/info') data = {path:'/minireel-proxy/media/012345678901234567890123.mp4',quality:'1080P',qualities:['1080P'],video_width:360,video_height:640,video_codec:'vp8',vid:url.searchParams.get('vid'),mode:'full'};
       else if (p === '/api/v1/category' || p === '/api/v1/search' || p.startsWith('/api/v1/lists/') || p === '/api/v1/rank') data = {items:dramas,filters:[{type:'genre',label:'分类',options:[{id:'',label:'全部'}]}],ranks:[],has_more:false,next_offset:0};
       return route.fulfill({contentType:'application/json',body:JSON.stringify({ok:true,data})});
     });
@@ -118,6 +118,7 @@ let browser;
       console.log('PASS mobile layout',size.width+'x'+size.height);
     } catch (error) {
       await page.screenshot({path:path.join(shots,size.width+'-failure.png')});
+      console.error('Video state:',await page.locator('#hero-video').evaluate(v=>({src:v.currentSrc,ready:v.readyState,network:v.networkState,error:v.error&&{code:v.error.code,message:v.error.message}})));
       console.error('DOM snapshot:',(await page.locator('body').innerText()).slice(0,1800));
       throw error;
     } finally {await context.close();}

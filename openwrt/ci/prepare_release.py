@@ -39,6 +39,23 @@ def select_upstream(tag):
  raise RuntimeError('No published stable upstream source release found')
 
 
+
+def replace_once(text,old,new,label):
+ count=text.count(old)
+ if count!=1:raise RuntimeError('Cannot apply OpenWrt main.go overlay at '+label+'; expected one match, found '+str(count))
+ return text.replace(old,new,1)
+
+
+def openwrt_main_overlay(source):
+ text=source
+ text=replace_once(text,'\tsearchDiscoveryCache searchDiscoveryCache\n}','\tsearchDiscoveryCache searchDiscoveryCache\n\tlanAccess            *lanAccess\n}','server LAN field')
+ text=replace_once(text,'\tport := flag.Int("port", 8797, "local HTTP port")','\tport := flag.Int("port", 8797, "HTTP port")\n\tlisten := flag.String("listen", "127.0.0.1", "IPv4 listen address; LAN mode requires --lan")\n\tlan := flag.Bool("lan", false, "serve authenticated clients on private IPv4 networks")\n\tpasswordFile := flag.String("password-file", "", "file containing LAN HTTP Basic password (username: hongguo)")\n\tcacheMB := flag.Int64("cache-mb", 512, "completed media cache cleanup threshold in MiB")\n\tmaxMediaMB := flag.Int64("max-media-mb", 512, "maximum whole-file media size in MiB")\n\tprepareConcurrency := flag.Int("prepare-concurrency", 1, "maximum concurrent media preparations in LAN mode")','LAN flags')
+ text=replace_once(text,'\tflag.Parse()\n\n\troot, err := fs.Sub(uiFiles, "ui")','\tflag.Parse()\n\taccess, err := configureLAN(*listen, *lan, *passwordFile)\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\tif *cacheMB < 16 || *cacheMB > 4096 || *maxMediaMB < 8 || *maxMediaMB > *cacheMB || *prepareConcurrency < 1 || *prepareConcurrency > 4 {\n\t\tlog.Fatal("cache-mb must be 16..4096, max-media-mb must be 8..cache-mb, prepare-concurrency must be 1..4")\n\t}\n\tminiReelMaxCache = *cacheMB << 20\n\tminiReelMaxBytes = *maxMediaMB << 20\n\tif access != nil {\n\t\tmediaPrepareSlots = make(chan struct{}, *prepareConcurrency)\n\t}\n\n\troot, err := fs.Sub(uiFiles, "ui")','LAN setup')
+ text=replace_once(text,'s := &server{instanceID: *instanceID,','s := &server{lanAccess: access, instanceID: *instanceID,','LAN server state')
+ text=replace_once(text,'s.withCORS(mux)','s.withLANAccess(s.withLANBrowserUI(s.withCORS(mux)))','LAN middleware')
+ text=replace_once(text,'if !privateLocalRequest(r) {','if !s.privateRequestAllowed(r) {','LAN private request authorization')
+ return text
+
 def integrate_upstream(repo,tag,source_url):
  original=git(repo,'rev-parse','HEAD')
  tracked_file=repo/'openwrt/UPSTREAM.json'
@@ -58,13 +75,21 @@ def integrate_upstream(repo,tag,source_url):
  # GITHUB_TOKEN cannot be assumed to have workflow-file write permission.
  # Starting from a clean checkout makes a failed patch safely reversible.
  base=tracked['commit'] if tracked else git(repo,'merge-base',original,upstream)
- patch=subprocess.check_output(['git','-C',str(repo),'diff','--binary','--full-index',base,upstream,'--','.',':(exclude).github/workflows/**'])
+ main_path=repo/MAIN_GO
+ current_main=main_path.read_text()
+ base_main=git(repo,'show',base+':'+MAIN_GO)
+ if current_main!=openwrt_main_overlay(base_main):
+  raise RuntimeError('OpenWrt main.go contains local changes outside the supported LAN overlay; manual review required')
+ merged_main=openwrt_main_overlay(git(repo,'show',upstream+':'+MAIN_GO))
+ patch=subprocess.check_output(['git','-C',str(repo),'diff','--binary','--full-index',base,upstream,'--','.',':(exclude).github/workflows/**',':(exclude)'+MAIN_GO])
  if patch:
   result=subprocess.run(['git','-C',str(repo),'apply','--3way','--index'],input=patch,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
   if result.returncode:
    conflicts=git(repo,'diff','--name-only','--diff-filter=U')
    git(repo,'reset','--hard',original)
    raise RuntimeError('Upstream integration failed; no branch or release was published. Conflicts: '+(conflicts or result.stderr.decode(errors='replace').strip()))
+ main_path.write_text(merged_main)
+ git(repo,'add','--',MAIN_GO)
  state=repo/'openwrt/UPSTREAM.json'
  state.write_text(json.dumps({'repository':UPSTREAM,'tag':tag,'commit':upstream},indent=2)+'\n')
  git(repo,'add','--','openwrt/UPSTREAM.json')

@@ -448,16 +448,6 @@
           <div class="app-update-actions"><button class="windows-playback-action account-action" data-mode="default" data-focus="windows-decode-default" aria-pressed="true" data-i18n="settings.windowsDefault">默认播放</button><button class="windows-playback-action account-action" data-mode="wasm" data-focus="windows-decode-wasm" aria-pressed="false" data-i18n="settings.windowsWasm">CPU 软解（WASM）</button></div>
           <p id="windows-decode-state" role="status" aria-live="polite"></p>
         </div>
-        <div class="settings-card app-update-card" id="playback-custom-device-settings">
-          <h2 data-i18n="settings.customPlaybackDevice">播放地址兜底设备</h2>
-          <p data-i18n="settings.customPlaybackDeviceDescription">默认播放地址获取失败时，使用手机红果设备号再次尝试。只用于播放地址，不影响登录、历史、收藏、点赞或评论。</p>
-          <div class="playback-custom-device-fields">
-            <label><span data-i18n="settings.customPlaybackDeviceDid">did（必填）</span><input class="playback-custom-device-input" id="playback-custom-device-did" data-focus="playback-custom-device-did" type="text" inputmode="numeric" autocomplete="off" maxlength="32" aria-label="手机红果 did"></label>
-            <label><span data-i18n="settings.customPlaybackDeviceUid">uid（可选）</span><input class="playback-custom-device-input" id="playback-custom-device-uid" data-focus="playback-custom-device-uid" type="text" inputmode="numeric" autocomplete="off" maxlength="32" aria-label="手机红果 uid"></label>
-          </div>
-          <div class="app-update-actions"><button class="playback-custom-device-action account-action account-primary" id="playback-custom-device-save" data-focus="playback-custom-device-save" data-i18n="settings.customPlaybackDeviceSave">保存</button><button class="playback-custom-device-action account-action" id="playback-custom-device-clear" data-focus="playback-custom-device-clear" data-i18n="settings.customPlaybackDeviceClear">清除</button></div>
-          <p id="playback-custom-device-state" role="status" aria-live="polite"></p>
-        </div>
         <div class="settings-card app-update-card is-hidden" id="desktop-mini-titlebar-settings">
           <h2 data-i18n="mini.titlebarSetting">小窗隐藏系统标题栏</h2>
           <p data-i18n="mini.titlebarSettingDescription">隐藏标题栏，通过小窗顶部拖动窗口。可随时恢复系统标题栏。</p>
@@ -513,7 +503,7 @@
         </div>
         <p class="support-thanks" data-i18n="support.copy">一杯咖啡，一份鼓励。谢谢你，让这里变得更好。</p>
       </section>
-      <div id="support-modal" class="support-modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="support-modal-title" aria-hidden="true"><div class="support-modal-panel"><div class="support-modal-heading"><h2 id="support-modal-title" data-i18n="support.scanTitle">扫码打赏</h2><button id="support-close" class="support-close" data-focus="support-close" data-i18n="common.close">关闭</button></div><img id="support-large-qr" alt="打赏二维码" data-i18n-alt="support.largeQr"><p data-i18n="support.scanHint">用手机扫一扫 · 按返回键关闭</p></div></div>
+      <div id="support-modal" class="support-modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="support-modal-title" aria-hidden="true"><div class="support-modal-panel"><div class="support-modal-heading"><h2 id="support-modal-title" data-i18n="support.scanTitle">扫码打赏</h2><button id="support-close" class="support-close" data-focus="support-close" data-i18n="common.close">关闭</button></div><div id="support-modal-methods" class="support-modal-methods is-hidden"><button id="support-method-wechat" class="support-method-option" data-focus="support-method-wechat" data-support-method="wechat" aria-pressed="false" data-i18n="support.wechat">微信打赏</button><button id="support-method-alipay" class="support-method-option" data-focus="support-method-alipay" data-support-method="alipay" aria-pressed="false" data-i18n="support.alipay">支付宝打赏</button></div><img id="support-large-qr" alt="打赏二维码" data-i18n-alt="support.largeQr"><p data-i18n="support.scanHint">用手机扫一扫 · 按返回键关闭</p></div></div>
 
       <section class="hero is-catalog-loading" id="hero" aria-label="推荐视频" data-i18n-aria-label="hero.recommendVideo">
         <div class="hero-media">
@@ -603,7 +593,9 @@
           </div>
         </section>
         <div id="player-diagnostics-shade" class="diagnostic-shade is-hidden" aria-hidden="true"></div>
-        <section class="player-options is-hidden" id="player-options" role="dialog" aria-modal="true" aria-labelledby="player-options-title"><div class="player-options-heading"><strong id="player-options-title"></strong><button class="player-option" id="player-options-close" data-focus="player-options-close" aria-label="关闭" data-i18n-aria-label="common.close">×</button></div><div id="player-options-list"></div><div id="player-diagnostics" class="is-hidden"><div id="player-diagnostics-scroll" class="diagnostic-scroll" tabindex="0" data-focus="diagnostics-scroll" aria-label="诊断内容" data-i18n-aria-label="ui.diagnosticContent"><div id="player-diagnostics-guidance" class="diagnostic-guidance is-unknown">
+        <section class="player-options is-hidden" id="player-options" role="dialog" aria-modal="true" aria-labelledby="player-options-title"><div class="player-options-heading"><strong id="player-options-title"></strong><button class="player-option" id="player-options-close" data-focus="player-options-close" aria-label="关闭" data-i18n-aria-label="common.close">×</button></div><div id="player-options-list"></div><div id="player-diagnostics" class="is-hidden">
+          <section class="diagnostic-support" aria-labelledby="diagnostic-support-title"><span class="diagnostic-support-icon" aria-hidden="true"><svg><use href="#icon-heart" xlink:href="#icon-heart"></use></svg></span><div class="diagnostic-support-copy"><h3 id="diagnostic-support-title" data-i18n="support.diagnosticTitle">让红果持续变好</h3><p data-i18n="support.diagnosticDescription">如果红果给你带来了方便，欢迎请作者喝杯咖啡，支持持续维护。</p></div><button id="player-diagnostics-support" class="player-option diagnostic-support-action" data-focus="diagnostics-support" aria-haspopup="dialog" aria-controls="support-modal" data-i18n="support.author">支持作者</button></section>
+          <div id="player-diagnostics-scroll" class="diagnostic-scroll" tabindex="0" data-focus="diagnostics-scroll" aria-label="诊断内容" data-i18n-aria-label="ui.diagnosticContent"><div id="player-diagnostics-guidance" class="diagnostic-guidance is-unknown">
   <section class="diagnostic-assessment" aria-labelledby="diagnostic-judgment-title">
     <div class="diagnostic-assessment-heading"><h3 id="diagnostic-judgment-title" data-i18n="diagnostic.guide.judgment">当前判断</h3><span id="player-diagnostics-state" class="diagnostic-state"></span></div>
     <p id="player-diagnostics-summary" role="status"></p>

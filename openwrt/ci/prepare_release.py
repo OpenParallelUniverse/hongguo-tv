@@ -79,9 +79,9 @@ def integrate_upstream(repo,tag,source_url):
  main_path=repo/MAIN_GO
  current_main=main_path.read_text()
  base_main=git(repo,'show',base+':'+MAIN_GO)
- if current_main!=openwrt_main_overlay(base_main):
+ if current_main.rstrip('\n')!=openwrt_main_overlay(base_main).rstrip('\n'):
   raise RuntimeError('OpenWrt main.go contains local changes outside the supported LAN overlay; manual review required')
- merged_main=openwrt_main_overlay(git(repo,'show',upstream+':'+MAIN_GO))
+ merged_main=openwrt_main_overlay(git(repo,'show',upstream+':'+MAIN_GO)).rstrip('\n')+'\n'
  patch=subprocess.check_output(['git','-C',str(repo),'diff','--binary','--full-index',base,upstream,'--','.',':(exclude).github/workflows/**',':(exclude)'+MAIN_GO])
  if patch:
   result=subprocess.run(['git','-C',str(repo),'apply','--3way','--index'],input=patch,stdout=subprocess.PIPE,stderr=subprocess.PIPE)

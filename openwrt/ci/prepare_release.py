@@ -77,20 +77,27 @@ def integrate_upstream(repo,tag,source_url):
  # Starting from a clean checkout makes a failed patch safely reversible.
  base=tracked['commit'] if tracked else git(repo,'merge-base',original,upstream)
  main_path=repo/MAIN_GO
- current_main=main_path.read_text()
- base_main=git(repo,'show',base+':'+MAIN_GO)
- if current_main.rstrip('\n')!=openwrt_main_overlay(base_main).rstrip('\n'):
-  raise RuntimeError('OpenWrt main.go contains local changes outside the supported LAN overlay; manual review required')
- merged_main=openwrt_main_overlay(git(repo,'show',upstream+':'+MAIN_GO)).rstrip('\n')+'\n'
- patch=subprocess.check_output(['git','-C',str(repo),'diff','--binary','--full-index',base,upstream,'--','.',':(exclude).github/workflows/**',':(exclude)'+MAIN_GO])
+ use_main_overlay=(main_path.exists() and
+                   git(repo,'cat-file','-e',base+':'+MAIN_GO,check=False).returncode==0 and
+                   git(repo,'cat-file','-e',upstream+':'+MAIN_GO,check=False).returncode==0)
+ if use_main_overlay:
+  current_main=main_path.read_text()
+  base_main=git(repo,'show',base+':'+MAIN_GO)
+  if current_main.rstrip('\n')!=openwrt_main_overlay(base_main).rstrip('\n'):
+   raise RuntimeError('OpenWrt main.go contains local changes outside the supported LAN overlay; manual review required')
+  merged_main=openwrt_main_overlay(git(repo,'show',upstream+':'+MAIN_GO)).rstrip('\n')+'\n'
+ patch_args=['git','-C',str(repo),'diff','--binary','--full-index',base,upstream,'--','.',':(exclude).github/workflows/**']
+ if use_main_overlay:patch_args.append(':(exclude)'+MAIN_GO)
+ patch=subprocess.check_output(patch_args)
  if patch:
   result=subprocess.run(['git','-C',str(repo),'apply','--3way','--index'],input=patch,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
   if result.returncode:
    conflicts=git(repo,'diff','--name-only','--diff-filter=U')
    git(repo,'reset','--hard',original)
    raise RuntimeError('Upstream integration failed; no branch or release was published. Conflicts: '+(conflicts or result.stderr.decode(errors='replace').strip()))
- main_path.write_text(merged_main)
- git(repo,'add','--',MAIN_GO)
+ if use_main_overlay:
+  main_path.write_text(merged_main)
+  git(repo,'add','--',MAIN_GO)
  state=repo/'openwrt/UPSTREAM.json'
  state.write_text(json.dumps({'repository':UPSTREAM,'tag':tag,'commit':upstream},indent=2)+'\n')
  git(repo,'add','--','openwrt/UPSTREAM.json')

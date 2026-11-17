@@ -5,6 +5,7 @@ import argparse,json,os,pathlib,re,subprocess,urllib.error,urllib.request
 UPSTREAM='aston314/hongguo-tv'
 RELEASES='aston314/hongguo-tv-releases'
 TAG_RE=re.compile(r'v([0-9]+\.[0-9]+\.[0-9]+)\Z')
+MAIN_GO='core/cmd/hongguotv/main.go'
 
 
 def git(repo,*args,check=True):
